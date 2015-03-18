@@ -1,5 +1,8 @@
 package engineTester;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import models.RawModel;
 import models.TexturedModel;
 
@@ -81,20 +84,22 @@ public class MainGameLoop
 		Entity entity = new Entity(staticModel, new Vector3f(0,-5,-20),0,0,0,1);
 		Entity entityFern = new Entity(staticModelFern, new Vector3f(0,0,0),0,0,0,1);
 		Entity entitySun = new Entity(staticModelSun, new Vector3f(0,0,0),0,0,0,1);
-		Entity entityBall = new Entity(staticModelSun, new Vector3f(0,0,0),0,0,0,1);
-		entity.setScale(0.1f);
+		Entity entityBall = new Entity(staticModelSun, new Vector3f(183,-15,-140),0,0,0,1);
+		//entity.setScale(0.1f);
 		
 		
-		Light light = new Light(new Vector3f(0,1000000,40), new Vector3f(1,1,1));
+		Light light = new Light(new Vector3f(0,1000000,-500000), new Vector3f(0.1f,0.1f,0.1f));
+		List<Light> lights = new ArrayList<Light>();
+		lights.add(light);
+		lights.add(new Light(new Vector3f(183,-15,-140), new Vector3f(2,2,0), new Vector3f(1, 0.01f, 0.002f)));
 		
-		Terrain terrain = new Terrain(0, -1, loader, texturePack, blendMap);
-		Terrain terrain2 = new Terrain(-1, -1, loader, texturePack, blendMap);
+		Terrain terrain = new Terrain(0, -1, loader, texturePack, blendMap, "heightMap");
 		
 		//Entity terrainentity = new Entity(new TexturedModel(terrain.getModel(), new ModelTexture(loader.loadTexture("image"))), new Vector3f(0,0,0), 0,0,0,1);
 		
 		Camera camera = new Camera();
 		
-		Player player = new Player(staticModelOotShield, new Vector3f(0,0,0), 0,0,0,1, camera);
+		Player player = new Player(staticModelOotShield, new Vector3f(0,0,0), 0,0,0,1, camera, terrain);
 		
 		MasterRenderer renderer = new MasterRenderer();
 		
@@ -115,7 +120,6 @@ public class MainGameLoop
 			//game logic
 			
 			renderer.processTerrain(terrain);
-			renderer.processTerrain(terrain2);
 			
 			renderer.processEntity(entity);
 			renderer.processEntity(entityFern);
@@ -123,7 +127,7 @@ public class MainGameLoop
 			renderer.processEntity(entityBall);
 			renderer.processEntity(player);
 			
-			renderer.render(light, camera);
+			renderer.render(lights, camera);
 
 			DisplayManager.updateDisplay();
 		}

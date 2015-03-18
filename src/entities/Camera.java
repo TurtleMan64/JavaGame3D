@@ -23,8 +23,8 @@ public class Camera
 	public void move()
 	{
 		
-		this.pitch+=-1*(Mouse.getY()-mousePreviousY);
-		this.yaw+=(Mouse.getX()-mousePreviousX);
+		this.pitch+=-0.5*(Mouse.getY()-mousePreviousY);
+		this.yaw+=0.5*(Mouse.getX()-mousePreviousX);
 		
 		Mouse.setCursorPosition(1280/2, 720/2);
 		mousePreviousX = Mouse.getX();

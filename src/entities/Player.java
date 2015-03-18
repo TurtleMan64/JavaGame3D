@@ -5,11 +5,13 @@ import models.TexturedModel;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.vector.Vector3f;
 
+import terrains.Terrain;
+
 public class Player extends Entity
 {
 
-	private float moveSpeedFactor = 0.1f;
-	private float moveSpeedMax = 1f;
+	private float moveSpeedFactor = 0.075f;
+	private float moveSpeedMax = 0.7f;
 	private float moveSpeedCurrent;
 	private float xVel;
 	private float yVel;
@@ -19,11 +21,14 @@ public class Player extends Entity
 	private float movementAngle; // in degrees
 	private float friction = 0.05f;
 	private boolean jumpInput;
+	private boolean previousJumpInput;
 	private Vector3f cameraPosition;
+	private float TERRAIN_HEIGHT;
 	
 	Camera currentCamera;
+	Terrain collisionTerrain;
 	
-	public Player(TexturedModel model, Vector3f position, float rotX, float rotY, float rotZ, float scale, Camera cameraToUse)
+	public Player(TexturedModel model, Vector3f position, float rotX, float rotY, float rotZ, float scale, Camera cameraToUse, Terrain terrainToCollide)
 	{
 		super(model, position, rotX, rotY, rotZ, scale);
 		currentCamera = cameraToUse;
@@ -35,17 +40,21 @@ public class Player extends Entity
 		movementAngle = 0;
 		moveSpeedCurrent = 0;
 		jumpInput = false;
+		previousJumpInput = false;
 		cameraPosition = new Vector3f(0,0,0);
+		TERRAIN_HEIGHT = 0;
+		collisionTerrain = terrainToCollide;
 	}
 	
 	public void step()
 	{
+		super.increasePosition(xVel, yVel, zVel);
 		setMovementInputs();
 
 		xVel += (float)(moveSpeedCurrent*Math.cos(Math.toRadians(currentCamera.getYaw()+movementAngle)));
 		zVel += (float)(moveSpeedCurrent*Math.sin(Math.toRadians(currentCamera.getYaw()+movementAngle)));
 		
-		Vector3f newCameraPosition = new Vector3f(this.getPosition().x,this.getPosition().y,this.getPosition().z);
+		Vector3f newCameraPosition = new Vector3f(super.getPosition().x,super.getPosition().y,super.getPosition().z);
 		float radius = 104;
 		newCameraPosition.x += (float)(Math.cos(Math.toRadians(currentCamera.getYaw()+270+180))*(radius*(Math.cos(Math.toRadians(currentCamera.getPitch())))));
 		newCameraPosition.z += (float)(Math.sin(Math.toRadians(currentCamera.getYaw()+270+180))*(radius*(Math.cos(Math.toRadians(currentCamera.getPitch())))));
@@ -63,22 +72,39 @@ public class Player extends Entity
 		
 		applyFriction();
 		
-		if(jumpInput)
+		TERRAIN_HEIGHT = collisionTerrain.getHeightOfTerrain(getX(), getZ());
+		
+		if(super.getY() < TERRAIN_HEIGHT)
 		{
-			jump();
+			yVel = 0;
+			super.setY(TERRAIN_HEIGHT);
+			if(jumpInput)
+			{
+				jump();
+			}
 		}
-		yVel-=0.1;
-		if(yVel < -5)
+		else
 		{
-			yVel = -5;
+			yVel-=0.1;
+			if(yVel < -5)
+			{
+				yVel = -5;
+			}
 		}
 		
 		
-		super.increasePosition(xVel, yVel, zVel);
+		//super.increasePosition(xVel, yVel, zVel);
 	}
 	
 	private void setMovementInputs()
 	{
+		previousJumpInput = jumpInput;
+		jumpInput = false;
+		if(Keyboard.isKeyDown(Keyboard.KEY_SPACE) && previousJumpInput == false)
+		{
+			jumpInput = true;
+		}
+		
 		movementInputX = 0;
 		movementInputY = 0;
 		if(Keyboard.isKeyDown(Keyboard.KEY_W))
