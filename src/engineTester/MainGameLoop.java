@@ -18,6 +18,7 @@ import terrains.Terrain;
 import textures.ModelTexture;
 import textures.TerrainTexture;
 import textures.TerrainTexturePack;
+import toolbox.MousePicker;
 import entities.Camera;
 import entities.Entity;
 import entities.Light;
@@ -84,7 +85,7 @@ public class MainGameLoop
 		Entity entity = new Entity(staticModel, new Vector3f(0,-5,-20),0,0,0,1);
 		Entity entityFern = new Entity(staticModelFern, new Vector3f(0,0,0),0,0,0,1);
 		Entity entitySun = new Entity(staticModelSun, new Vector3f(0,0,0),0,0,0,1);
-		Entity entityBall = new Entity(staticModelSun, new Vector3f(183,-15,-140),0,0,0,1);
+		Entity lampEntity = new Entity(staticModelSun, new Vector3f(183,-15,-140),0,0,0,1);
 		//entity.setScale(0.1f);
 		
 		
@@ -103,14 +104,24 @@ public class MainGameLoop
 		
 		MasterRenderer renderer = new MasterRenderer();
 		
+		MousePicker picker = new MousePicker(camera, renderer.getProjectionMatrix(), terrain);
 		
+		Vector3f terrainPoint = new Vector3f(0,0,0);
 		while(!Display.isCloseRequested() && !(Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)))
 		{
 			//entity.increasePosition(0, 0, 0);
 			camera.move();
 			//camera.setPosition(player.getPosition());
 			player.step();
-			light.setPosition(new Vector3f(light.getPosition().x, light.getPosition().y+0.02f, light.getPosition().z));
+			picker.update();
+			terrainPoint = picker.getCurrentTerrainPoint();
+			if(terrainPoint!= null)
+			{
+				lampEntity.setPosition(new Vector3f(terrainPoint.x, terrainPoint.y +15, terrainPoint.z));
+				lights.get(1).setPosition(new Vector3f(terrainPoint.x, terrainPoint.y +15, terrainPoint.z));
+			}
+			//System.out.println(picker.getCurrentRay());
+			//light.setPosition(new Vector3f(light.getPosition().x, light.getPosition().y+0.02f, light.getPosition().z));
 			entity.increaseRotation(0, 1, 0);
 			entitySun.setPosition(light.getPosition());
 			
@@ -124,7 +135,7 @@ public class MainGameLoop
 			renderer.processEntity(entity);
 			renderer.processEntity(entityFern);
 			renderer.processEntity(entitySun);
-			renderer.processEntity(entityBall);
+			renderer.processEntity(lampEntity);
 			renderer.processEntity(player);
 			
 			renderer.render(lights, camera);

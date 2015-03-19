@@ -62,8 +62,8 @@ public class Player extends Entity
 		
 		cameraPosition = newCameraPosition;
 		
-		System.out.println(newCameraPosition);
-		System.out.println(cameraPosition);
+		//System.out.println(newCameraPosition);
+		//System.out.println(cameraPosition);
 		
 		
 		currentCamera.setPosition(newCameraPosition);
@@ -74,7 +74,7 @@ public class Player extends Entity
 		
 		TERRAIN_HEIGHT = collisionTerrain.getHeightOfTerrain(getX(), getZ());
 		
-		if(super.getY() < TERRAIN_HEIGHT)
+		if(super.getY() <= TERRAIN_HEIGHT)
 		{
 			yVel = 0;
 			super.setY(TERRAIN_HEIGHT);

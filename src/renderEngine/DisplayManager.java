@@ -24,7 +24,8 @@ public class DisplayManager
 		try 
 		{
 			Display.setDisplayMode(new DisplayMode(WIDTH, HEIGHT));
-			Display.create(new PixelFormat(), attribs);
+			//PixelFormat(Alpha Bits, Depth Bits, Stencil Bits, Samples)
+			Display.create(new PixelFormat(8, 8, 0, 8), attribs);
 			Display.setTitle("My First Display!");
 		} 
 		catch (LWJGLException e) 
