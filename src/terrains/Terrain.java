@@ -15,6 +15,9 @@ import renderEngine.Loader;
 import textures.TerrainTexture;
 import textures.TerrainTexturePack;
 import toolbox.Maths;
+import collision.CollisionModel;
+import collision.Point3D;
+import collision.Triangle3D;
 
 public class Terrain 
 {
@@ -28,16 +31,21 @@ public class Terrain
 	private RawModel model;
 	private TerrainTexturePack texturePack;
 	private TerrainTexture blendMap;
+	private CollisionModel collisionModel;
+	private float damper;
+	private float reflectivity;
 	
 	private float[][] heights;
 	
-	public Terrain(int gridX, int gridZ, Loader loader, TerrainTexturePack texturePack, TerrainTexture blendMap, String heightMap)
+	public Terrain(int gridX, int gridZ, Loader loader, TerrainTexturePack texturePack, TerrainTexture blendMap, String heightMap, float damper, float reflectivity)
 	{
 		this.texturePack = texturePack;
 		this.blendMap = blendMap;
 		this.x = gridX * SIZE;
 		this.z = gridZ * SIZE;
 		this.model = generateTerrain(loader, heightMap);
+		this.damper = damper;
+		this.reflectivity = reflectivity;
 	}
 	
 	public float getX() 
@@ -65,6 +73,16 @@ public class Terrain
 		return blendMap;
 	}
 	
+	public float getDamper() 
+	{
+		return damper;
+	}
+
+	public float getReflectivity() 
+	{
+		return reflectivity;
+	}
+
 	public float getHeightOfTerrain(float worldX, float worldZ)
 	{
 		float terrainX = worldX - this.x;
@@ -99,6 +117,7 @@ public class Terrain
 
 	private RawModel generateTerrain(Loader loader, String heightMap)
 	{
+		this.collisionModel = new CollisionModel();
 		BufferedImage image = null;
 		try 
 		{
@@ -132,6 +151,7 @@ public class Terrain
 				normals[vertexPointer*3+2] = normal.z;
 				textureCoords[vertexPointer*2] = (float)j/((float)VERTEX_COUNT - 1);
 				textureCoords[vertexPointer*2+1] = (float)i/((float)VERTEX_COUNT - 1);
+				
 				vertexPointer++;
 			}
 		}
@@ -152,6 +172,54 @@ public class Terrain
 				indices[pointer++] = bottomRight;
 			}
 		}
+		
+		/*
+		System.out.println(indices.length);
+		System.out.println(indices[0]);
+		System.out.println(indices[1]);
+		System.out.println(indices[2]);
+		System.out.println(indices[3]);
+		System.out.println(indices[4]);
+		System.out.println(indices[5]);
+		System.out.println(indices[6]);
+		System.out.println(vertices.length);
+		System.out.println(vertices[0]);
+		System.out.println(vertices[1]);
+		System.out.println(vertices[2]);
+		System.out.println(vertices[3]);
+		System.out.println(vertices[4]);
+		System.out.println(vertices[5]);
+		System.out.println(vertices[6]);
+		*/
+		for(int number=0;number<indices.length-3;number+=9)
+		{
+			float vx1 = vertices[indices[number]];
+			float vy1 = vertices[indices[number+1]];
+			float vz1 = vertices[indices[number+2]];
+			float vx2 = vertices[indices[number+3]];
+			float vy2 = vertices[indices[number+4]];
+			float vz2 = vertices[indices[number+5]];
+			float vx3 = vertices[indices[number+6]];
+			float vy3 = vertices[indices[number+7]];
+			float vz3 = vertices[indices[number+8]];
+			System.out.println(vx1);
+			System.out.println(vy1);
+			System.out.println(vz1);
+			System.out.println(vx2);
+			System.out.println(vy2);
+			System.out.println(vz2);
+			System.out.println(vx3);
+			System.out.println(vy3);
+			System.out.println(vz3);
+					
+			collisionModel.triangles.add(new Triangle3D(
+				new Point3D(vx1,vy1,vz1), 
+				new Point3D(vx2,vy2,vz2), 
+				new Point3D(vx3,vy3,vz3)));
+		}
+		
+		
+		
 		return loader.loadToVAO(vertices, textureCoords, normals, indices);
 	}
 	

@@ -10,6 +10,7 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.util.vector.Vector3f;
 
+import collision.CollisionChecker;
 import renderEngine.DisplayManager;
 import renderEngine.Loader;
 import renderEngine.MasterRenderer;
@@ -26,8 +27,12 @@ import entities.Player;
 
 public class MainGameLoop 
 {
+	static ArrayList<Entity> gameEntities;
+	
 	public static void main(String[] args) 
 	{
+		gameEntities = new ArrayList<Entity>();
+		
 		DisplayManager.createDisplay();
 		
 		Loader loader = new Loader();
@@ -87,21 +92,29 @@ public class MainGameLoop
 		Entity entityFern = new Entity(staticModelFern, new Vector3f(0,0,0),0,0,0,1);
 		Entity entitySun = new Entity(staticModelSun, new Vector3f(0,0,0),0,0,0,1);
 		Entity lampEntity = new Entity(staticModelSun, new Vector3f(183,-15,-140),0,0,0,1);
-		//entity.setScale(0.1f);
+		
+		gameEntities.add(entity);
+		gameEntities.add(entityFern);
+		gameEntities.add(entitySun);
+		gameEntities.add(lampEntity);
+		entity.setScale(10.0f);
 		
 		
-		Light light = new Light(new Vector3f(0,1000000,-500000), new Vector3f(0.1f,0.1f,0.1f));
+		Light light = new Light(new Vector3f(0,1000000,-500000), new Vector3f(0.5f,0.5f,0.5f));
 		List<Light> lights = new ArrayList<Light>();
 		lights.add(light);
 		lights.add(new Light(new Vector3f(183,-15,-140), new Vector3f(2,2,0), new Vector3f(1, 0.01f, 0.002f)));
 		
-		Terrain terrain = new Terrain(0, -1, loader, texturePack, blendMap, "heightMap");
+		Terrain terrain = new Terrain(0, -1, loader, texturePack, blendMap, "heightMap", 0.1f, 0.1f);
 		
+		CollisionChecker collisionChecker = new CollisionChecker();
 		//Entity terrainentity = new Entity(new TexturedModel(terrain.getModel(), new ModelTexture(loader.loadTexture("image"))), new Vector3f(0,0,0), 0,0,0,1);
 		
 		Camera camera = new Camera();
 		
 		Player player = new Player(staticModelOotShield, new Vector3f(0,0,0), 0,0,0,1, camera, terrain);
+		
+		gameEntities.add(player);
 		
 		MasterRenderer renderer = new MasterRenderer();
 		
@@ -119,7 +132,7 @@ public class MainGameLoop
 			if(terrainPoint!= null)
 			{
 				lampEntity.setPosition(new Vector3f(terrainPoint.x, terrainPoint.y +15, terrainPoint.z));
-				lights.get(1).setPosition(new Vector3f(terrainPoint.x, terrainPoint.y +15, terrainPoint.z));
+				//lights.get(1).setPosition(new Vector3f(terrainPoint.x, terrainPoint.y +15, terrainPoint.z));
 			}
 			//System.out.println(picker.getCurrentRay());
 			//light.setPosition(new Vector3f(light.getPosition().x, light.getPosition().y+0.02f, light.getPosition().z));
@@ -129,15 +142,21 @@ public class MainGameLoop
 			player.increaseRotation(1, 1, 1);
 			//entityBall.setPosition(player.getViewPosition());
 			
+			
+			
 			//game logic
+			for(Entity currentEntity: gameEntities)
+			{
+				renderer.processEntity(currentEntity);
+			}
 			
 			renderer.processTerrain(terrain);
 			
-			renderer.processEntity(entity);
-			renderer.processEntity(entityFern);
-			renderer.processEntity(entitySun);
-			renderer.processEntity(lampEntity);
-			renderer.processEntity(player);
+			//renderer.processEntity(entity);
+			//renderer.processEntity(entityFern);
+			//renderer.processEntity(entitySun);
+			//renderer.processEntity(lampEntity);
+			//renderer.processEntity(player);
 			
 			renderer.render(lights, camera);
 
