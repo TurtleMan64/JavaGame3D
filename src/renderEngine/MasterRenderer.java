@@ -15,6 +15,7 @@ import org.lwjgl.util.vector.Matrix4f;
 import shaders.StaticShader;
 import shaders.TerrainShader;
 import terrains.Terrain;
+import collision.CollisionModel;
 import entities.Camera;
 import entities.Entity;
 import entities.Light;
@@ -23,7 +24,7 @@ public class MasterRenderer
 {
 	private static final float FOV = 70;
 	private static final float NEAR_PLANE = 0.1f;
-	private static final float FAR_PLANE = 1000;
+	private static final float FAR_PLANE = 10000;
 	
 	private static final float RED = 0.9f;
 	private static final float GREEN = 0.95f;
@@ -70,12 +71,13 @@ public class MasterRenderer
 		terrains.add(terrain);
 	}
 	
-	public void render(List<Light> lights, Camera camera)
+	public void render(List<Light> lights, Camera camera, CollisionModel model)
 	{
 		prepare();
 		shader.start();
 		shader.loadSkyColour(RED, GREEN, BLUE);
 		shader.loadLights(lights);
+		shader.loadCollision(model);
 		shader.loadViewMatrix(camera);
 		renderer.render(entities);
 		shader.stop();

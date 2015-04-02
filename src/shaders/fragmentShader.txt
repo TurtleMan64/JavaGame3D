@@ -5,6 +5,7 @@ in vec3 surfaceNormal;
 in vec3 toLightVector[4];
 in vec3 toCameraVector;
 in float visibility;
+in vec3 worldposition;
 
 out vec4 out_Colour;
 
@@ -14,6 +15,351 @@ uniform vec3 attenuation[4];
 uniform float shineDamper;
 uniform float reflectivity;
 uniform vec3 skyColour;
+uniform vec3 turtle[3];
+uniform float shiny;
+
+const int triNumber = 100;
+
+uniform float y1[triNumber];
+uniform float x1[triNumber];
+uniform float z1[triNumber];
+uniform float x2[triNumber];
+uniform float y2[triNumber];
+uniform float z2[triNumber];
+uniform float x3[triNumber];
+uniform float y3[triNumber];
+uniform float z3[triNumber];
+uniform float Aval[triNumber];
+uniform float Bval[triNumber];
+uniform float Cval[triNumber];
+uniform float Dval[triNumber];
+
+float teddybear = 1.5;
+
+
+
+/*
+bool checkCollision(float tt, float yy, float uu, float ii, float pp, float oo);
+
+bool checkInsideTriangle(float aa, float ss, float dd, float ff, float gg, float hh, float jj, float kk, float ll, float zz, float xx, float cc, float vv);
+
+float getArea(float bb, float nn, float mm, float qq, float ww, float ee);
+*/
+
+
+
+/*
+bool checkCollision(in float px1, in float py1, in float pz1, in float px2, in float py2, in float pz2);
+
+bool checkInsideTriangle(float checkx, float checky, float checkz, float cx1, float cy1, float cz1, float cx2, float cy2, float cz2, float cx3, float cy3, float cz3, float prec);
+
+float getArea(in float argument0, in float argument1, in float argument2, in float argument3, in float argument4, in float argument5);
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+float getArea(float argument0, float argument1, float argument2, float argument3, float argument4, float argument5)
+{
+	float a = 0;
+	float b = 0;
+	float c = 0;
+	float s = 0;
+	a = (sqrt(abs(((argument0-argument2)*(argument0-argument2))+((argument1-argument3)*(argument1-argument3)))));
+	b = (sqrt(abs(((argument0-argument4)*(argument0-argument4))+((argument1-argument5)*(argument1-argument5)))));
+	c = (sqrt(abs(((argument4-argument2)*(argument4-argument2))+((argument5-argument3)*(argument5-argument3)))));
+	s = ((a+b+c)/2.0);
+
+	return float(sqrt(abs(s*(s-a)*(s-b)*(s-c))));
+}
+
+
+
+
+
+bool checkInsideTriangle(float checkx, float checky, float checkz, float cx1, float cy1, float cz1, float cx2, float cy2, float cz2, float cx3, float cy3, float cz3, float prec)
+{
+	
+	if (((getArea(checkx,checky,cx2,cy2,cx3,cy3)+getArea(cx1,cy1,checkx,checky,cx3,cy3)+getArea(cx1,cy1,cx2,cy2,checkx,checky))-getArea(cx1,cy1,cx2,cy2,cx3,cy3)) <= prec &&
+	   ((getArea(checky,checkz,cy2,cz2,cy3,cz3)+getArea(cy1,cz1,checky,checkz,cy3,cz3)+getArea(cy1,cz1,cy2,cz2,checky,checkz))-getArea(cy1,cz1,cy2,cz2,cy3,cz3)) <= prec &&
+	   ((getArea(checkx,checkz,cx2,cz2,cx3,cz3)+getArea(cx1,cz1,checkx,checkz,cx3,cz3)+getArea(cx1,cz1,cx2,cz2,checkx,checkz))-getArea(cx1,cz1,cx2,cz2,cx3,cz3)) <= prec)
+	{
+	    return true;
+	}
+	else
+	{
+	    return false;
+	}
+	
+	
+	
+	/*
+	if(((getArea(checkx,checkz,cx2,cz2,cx3,cz3)+
+		getArea(cx1,cz1,checkx,checkz,cx3,cz3)+
+		getArea(cx1,cz1,cx2,cz2,checkx,checkz))-
+		getArea(cx1,cz1,cx2,cz2,cx3,cz3)) <= prec)
+	*/
+		
+	/*
+	float test = 0.0;
+	test = cx3+1;
+	
+	
+	if(getArea(checkx,checky,cx3,3,5,6) <= prec)
+	//if(((getArea(checkx,checky,cx2,cy2,cx3,cy3)+getArea(cx1,cy1,checkx,checky,cx3,cy3)+getArea(cx1,cy1,cx2,cy2,checkx,checky))-getArea(cx1,cy1,cx2,cy2,cx3,cy3)) <= prec)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+	*/
+}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+bool checkCollision(in float px1, in float py1, in float pz1, in float px2, in float py2, in float pz2)
+{
+	int firstAbove = -2;
+	int secondAbove = -2;
+	int triangleCollide = -1;
+	int i = 0;
+
+
+	float tx1 = -1;
+	float ty1 = -1;
+	float tz1 = -1;
+	float tx2 = -1;
+	float ty2 = -1;
+	float tz2 = -1;
+	float tx3 = -1;
+	float ty3 = -1;
+	float tz3 = -1;
+	
+	float triA = -1;
+	float triB = -1;
+	float triC = -1;
+	float triD = -1;
+
+	float cix = -1;
+	float ciy = -1;
+	float ciz = -1;
+	
+	float numerator = -1;
+	float denominator = -1;
+	float u = -1;
+	
+	float planey1 = -1;
+	float planey2 = -1;
+
+	bool hitSomething = false;
+
+	for(i = 0; i < 1; i++)
+	{
+		//checkTriangle = true;
+	    
+	    
+	     tx1 = x1[i];
+	    tx2 = x2[i];
+	    tx3 = x3[i];
+	    
+        ty1 = y1[i];
+	    //ty2 = y2[i];
+	    //ty3 = y3[i];
+	    
+        //tz1 = z1[i];
+	    //tz2 = z2[i];
+	   //tz3 = z3[i];
+	    
+	    
+	    if(ty1 == 0)
+	    {
+	    
+	    }
+	    
+	    if(y1[0] == 0)
+	    {
+	    
+	    }
+	    
+	    //if(B[0] == 0)
+    	{
+    		
+    	}
+	    
+	    
+	    //if(checkTriangle == true)
+	    //{
+	    
+	    
+	    	//triA = Aval[i];
+	    	//triB = Bval[i];
+	    	//triC = Cval[i];
+	    	//triD = Dval[i];
+	    	
+	    	
+	    	
+	    	
+	        
+	        numerator = (triA*px1+triB*py1+triC*pz1+triD);
+	        denominator = (triA*(px1-px2)+triB*(py1-py2)+triC*(pz1-pz2));
+	        
+	        
+	        if(denominator == 0.0)
+	        {
+	        	u = -1;
+	            cix = -1;
+	            ciy = -1;
+	            ciz = -1;
+	        }
+	        
+	        else
+	        
+	        {
+	        	
+	            u = (numerator/denominator);
+	            cix = px1+u*(px2-px1);
+	            ciy = py1+u*(py2-py1);
+	            ciz = pz1+u*(pz2-pz1);
+
+	            
+	            if(triB != 0.0)
+	            {
+	            	
+	            	planey1 = (((-triA*px1) + (-triC*pz1)-triD)/triB);
+	                planey2 = (((-triA*px2) + (-triC*pz2)-triD)/triB);
+	                
+	                
+	                
+	                //planey1 = A[0];
+	                
+					//if(planey1 == 1)
+					
+	                if(py1 - planey1 > 0)
+	                {
+	                    firstAbove = 1;
+	                }
+	                
+	                else
+	                {
+	                    if (py1 < planey1)
+	                    {
+	                        firstAbove = -1;
+	                    }
+	                    else
+	                    {
+	                        firstAbove = 0;
+	                    }
+	                }
+	                
+	                
+	                
+	                
+	                if (py2 < planey2)
+	                {
+	                    secondAbove = -1;
+	                }
+	                else
+	                {
+	                    if (py2 > planey2)
+	                    {
+	                        secondAbove = 1;
+	                    }
+	                    else
+	                    {
+	                        secondAbove = 0;
+	                    }
+	                }
+	                
+	                
+	            }
+	            
+	            else
+	            {
+	                firstAbove = 0;
+	                secondAbove = 0;
+	            }
+	            
+	            
+	            
+	        }
+	        
+	        
+	        
+	        
+	        if ((secondAbove != firstAbove))
+	        {
+	        	
+	            if (u == -1 && ciz == -1 && ciy == -1 && ciz == -1)
+	            {
+	            	
+	            }
+	            else
+	            {
+	            
+	            	
+	                if //(checkInsideTriangle(cix,ciy,ciz,tx1,ty1,tz1,tx2,ty2,tz2,tx3,ty3,tz3,10.0) == true)
+	                (checkInsideTriangle   (1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1))
+	                {
+	                	
+	                    return true;
+	                }
+	                
+	                //if(ty1 == 0)
+	                {
+	                	//return false;
+	                }
+	                
+	            }
+	            
+	        }
+	        else
+	        {
+	            if (firstAbove == 0 && secondAbove == 0)
+	            {
+	                return true;
+	            }
+	        }
+	        
+	        
+	        
+	    //}
+	    
+	    
+	}
+	
+	
+	
+	return false;
+}
+
+
+
+	
+
 
 void main(void)
 {
@@ -22,6 +368,13 @@ void main(void)
 	
 	vec3 totalDiffuse = vec3(0.0);
 	vec3 totalSpecular = vec3(0.0);
+	
+	//if(turtle[0].x == 0)
+	{
+	
+	}
+	
+	
 	
 	for(int i=0; i<4; i++)
 	{
@@ -50,4 +403,46 @@ void main(void)
 
 	out_Colour = vec4(totalDiffuse, 1.0) * textureColour + vec4(totalSpecular, 1.0);
 	out_Colour = mix(vec4(skyColour, 1.0), out_Colour, visibility);
+	
+	//if(worldposition.x < 10 && worldposition.x > -10 
+	//	&& worldposition.z < 10 && worldposition.z > -10)
+	//{
+	//	out_Colour = out_Colour/10;
+	//}
+	
+	//out_Colour.r = x1[0];
+	//if(x1[0] == 0)
+	{
+		
+	}
+	
+	
+	if(checkCollision(worldposition.x, 
+					  worldposition.y, 
+					  worldposition.z, 
+					  worldposition.x+toLightVector[0].x, 
+					  worldposition.y+toLightVector[0].y,
+					  worldposition.z+toLightVector[0].z) == true)
+	{
+		//out_Colour = out_Colour/10;
+	}
+	
+	
+	//out_Colour = out_Colour/1000;
+	out_Colour = out_Colour*shiny;
+	out_Colour = out_Colour*turtle[1].x;
+	out_Colour = out_Colour*y1[0];
+	
 }
+
+
+
+
+
+
+
+
+
+
+
+

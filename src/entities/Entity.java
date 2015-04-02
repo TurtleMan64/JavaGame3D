@@ -21,6 +21,11 @@ public class Entity
 		this.rotZ = rotZ;
 		this.scale = scale;
 	}
+	
+	public void step()
+	{
+		
+	}
 
 	public void increasePosition(float dx, float dy, float dz)
 	{
@@ -53,7 +58,7 @@ public class Entity
 
 	public void setPosition(Vector3f position) 
 	{
-		this.position = position;
+		this.position.set(position);
 	}
 	
 	public void setX(float newX)

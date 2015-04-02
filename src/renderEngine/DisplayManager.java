@@ -9,8 +9,8 @@ import org.lwjgl.opengl.ContextAttribs;
 
 public class DisplayManager 
 {
-	private static final int WIDTH = 1280;
-	private static final int HEIGHT = 720;
+	private static final int WIDTH = 160*8;
+	private static final int HEIGHT = 90*8;
 	private static final int FPS_CAP = 60;
 	
 	
@@ -46,5 +46,15 @@ public class DisplayManager
 	public static void closeDisplay()
 	{
 		Display.destroy();
+	}
+	
+	public static int getWidth()
+	{
+		return WIDTH;
+	}
+	
+	public static int getHeight()
+	{
+		return HEIGHT;
 	}
 }

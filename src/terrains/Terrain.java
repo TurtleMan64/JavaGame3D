@@ -24,7 +24,7 @@ public class Terrain
 	private static final float SIZE = 800;
 	private static final float MAX_HEIGHT = 40;
 	private static final float MAX_PIXEL_COLOUR = 256*256*256;
-	private static final float MIN_HEIGHT = -40;
+	private static final float MIN_HEIGHT = 0;
 	
 	private float x;
 	private float z;
@@ -61,6 +61,11 @@ public class Terrain
 	public RawModel getModel() 
 	{
 		return model;
+	}
+	
+	public CollisionModel getCollisionModel()
+	{
+		return collisionModel;
 	}
 
 	public TerrainTexturePack getTexturePack() 
@@ -170,6 +175,11 @@ public class Terrain
 				indices[pointer++] = topRight;
 				indices[pointer++] = bottomLeft;
 				indices[pointer++] = bottomRight;
+				
+				//collisionModel.triangles.add(new Triangle3D(
+				//		new Vector3f(vx1,vy1,vz1), 
+				//		new Vector3f(vx2,vy2,vz2), 
+				//		new Vector3f(vx3,vy3,vz3)));
 			}
 		}
 		
@@ -202,6 +212,7 @@ public class Terrain
 			float vx3 = vertices[indices[number+6]];
 			float vy3 = vertices[indices[number+7]];
 			float vz3 = vertices[indices[number+8]];
+			/*
 			System.out.println(vx1);
 			System.out.println(vy1);
 			System.out.println(vz1);
@@ -211,11 +222,13 @@ public class Terrain
 			System.out.println(vx3);
 			System.out.println(vy3);
 			System.out.println(vz3);
+			System.out.println();
+			*/
 					
 			collisionModel.triangles.add(new Triangle3D(
-				new Point3D(vx1,vy1,vz1), 
-				new Point3D(vx2,vy2,vz2), 
-				new Point3D(vx3,vy3,vz3)));
+				new Vector3f(vx1,vy1,vz1), 
+				new Vector3f(vx2,vy2,vz2), 
+				new Vector3f(vx3,vy3,vz3)));
 		}
 		
 		

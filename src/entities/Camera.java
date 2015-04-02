@@ -1,10 +1,11 @@
 package entities;
 
-import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.util.vector.Vector3f;
 
-public class Camera 
+import renderEngine.DisplayManager;
+
+public class Camera
 {
 	private Vector3f position = new Vector3f(0,20,0);
 	private float pitch;
@@ -19,20 +20,16 @@ public class Camera
 		mousePreviousY = Mouse.getY();
 	}
 	
-	
-	public void move()
+	public void step()
 	{
-		
 		this.pitch+=-0.5*(Mouse.getY()-mousePreviousY);
 		this.yaw+=0.5*(Mouse.getX()-mousePreviousX);
 		
-		Mouse.setCursorPosition(1280/2, 720/2);
+		Mouse.setCursorPosition(DisplayManager.getWidth()/2, DisplayManager.getHeight()/2);
 		mousePreviousX = Mouse.getX();
 		mousePreviousY = Mouse.getY();
-		//Mouse.setCursorPosition(1280/2, 720/2);
-		
 	}
-
+	
 	public Vector3f getPosition() 
 	{
 		return position;
@@ -40,7 +37,7 @@ public class Camera
 	
 	public void setPosition(Vector3f position)
 	{
-		this.position = position;
+		this.position.set(position);
 	}
 
 	public float getPitch() 
