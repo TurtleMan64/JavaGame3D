@@ -6,15 +6,24 @@ import org.lwjgl.util.vector.Vector3f;
 public class CollisionChecker 
 {
 	private CollisionModel collideModel;
-	private Point3D collidePosition;
+	private Vector3f collidePosition;
+	public Vector3f p1Collide;
+	public Vector3f p2Collide;
 	
 	public CollisionChecker(CollisionModel myCollideModel)//colision object)
 	{
 		this.collideModel = myCollideModel;
-		collidePosition = new Point3D(0, 0, 0);
+		collidePosition = new Vector3f(0, 0, 0);
+		p1Collide = new Vector3f(0, 0, 0);
+		p2Collide = new Vector3f(0, 0, 0);
 	}
 	
 	
+	
+	public boolean checkCollision(Vector3f startPoint, Vector3f endPoint)
+	{
+		return this.checkCollision(startPoint.x, startPoint.y, startPoint.z, endPoint.x, endPoint.y, endPoint.z);
+	}
 	//Anders Sjoboen
 	//checks for a collision
 	//sets the field "collidePosition" to the coordinates of the collision
@@ -22,17 +31,17 @@ public class CollisionChecker
 	//takes in a starting position and an ending position
 	
 	//returns whether or not there was a collision (true if there was)
-	public boolean checkCollision(Point3D startPoint, Point3D endPoint)
+	public boolean checkCollision(float px1, float py1, float pz1, float px2, float py2, float pz2)
 	{
-		////////////////////////////////////////////////////////////////////////////////////////////////
 		
 		//var tridex,px1,py1,pz1,px2,py2,pz2,firstabove,secondabove,trianglecollide,
 		//i,tx1,ty1,tz1,tx2,ty2,tz2,tx3,ty3,tz3,A,B,C,D,cix,ciy,ciz,numerator,
 		//denominator,u,normalx,normaly,normalz,checktriangle;
-		
+		//p1Collide.set(startPoint);
+		//p2Collide.set(endPoint);
 		int triIndex;
-		float px1 = startPoint.x, py1 = startPoint.y, pz1 = startPoint.z;
-		float px2 = endPoint.x, py2 = endPoint.y, pz2 = endPoint.z;
+		//float px1 = startPoint.x, py1 = startPoint.y, pz1 = startPoint.z;
+		//float px2 = endPoint.x, py2 = endPoint.y, pz2 = endPoint.z;
 		int firstAbove, secondAbove, triangleCollide, i;
 		//Triangle3D testTri = null;
 		float tx1, ty1, tz1, tx2, ty2, tz2, tx3, ty3, tz3;
@@ -41,7 +50,6 @@ public class CollisionChecker
 		float cix, ciy, ciz;
 		float numerator, denominator, u;
 		//Vector3f normal = null;
-		float normalX, normalY, normalZ;
 		boolean checkTriangle;
 		
 		/*
@@ -60,35 +68,45 @@ public class CollisionChecker
 		triangleCollide = -1;
 		boolean onPlane = false;
 		float minDist = -1;
+		triIndex = -1;
+		
+		//ty1 = 0;
+		//ty2 = 0;
+		//ty3 = 0;
+		//tz1 = 0;
+		//tz2 = 0;
+		//tz3 = 0;
 
 		i = 0;
 
 		//while(i < ob_map.tricount)
-		for(i = 0; i < collideModel.triangles.size()-1; i++)
+		for(i = 0; i < collideModel.triangles.size(); i++)
 		{
-		    //checkTriangle = false;
-			checkTriangle = true;
-		    /*
+			//System.out.println("checking triangle# "+i);
+			//System.out.println("triangle p1 =  "+collideModel.triangles.get(i).p1);
+		    checkTriangle = false;
+			//checkTriangle = true;
+		    
 		    tx1 = collideModel.triangles.get(i).p1.x;
 		    tx2 = collideModel.triangles.get(i).p2.x;
 		    tx3 = collideModel.triangles.get(i).p3.x;
-		    if(px1-6 <= max(tx1,tx2,tx3) && px1+6 >= min(tx1,tx2,tx3))
+		    //if(px1-6 <= Math.max(tx1, Math.max(tx2,tx3)) && px1+6 >= Math.min(tx1, Math.min(tx2,tx3)))
 		    {
-		        ty1 = ob_map.y1[i];
-		        ty2 = ob_map.y2[i];
-		        ty3 = ob_map.y3[i];
-		        if(py1-6 <= max(ty1,ty2,ty3) && py1+6 >= min(ty1,ty2,ty3))
+		        ty1 = collideModel.triangles.get(i).p1.y;
+			    ty2 = collideModel.triangles.get(i).p2.y;
+			    ty3 = collideModel.triangles.get(i).p3.y;
+		        //if(py1-6 <= Math.max(ty1, Math.max(ty2,ty3)) && py1+6 >= Math.min(ty1, Math.min(ty2,ty3)))
 		        {
-		            tz1 = ob_map.z1[i];
-		            tz2 = ob_map.z2[i];
-		            tz3 = ob_map.z3[i];
-		            if(pz1-6 <= max(tz1,tz2,tz3) && pz1+6 >= min(tz1,tz2,tz3))
+		            tz1 = collideModel.triangles.get(i).p1.z;
+				    tz2 = collideModel.triangles.get(i).p2.z;
+				    tz3 = collideModel.triangles.get(i).p3.z;
+		            //if(pz1-6 <= Math.max(tz1, Math.max(tz2,tz3)) && pz1+6 >= Math.min(tz1, Math.min(tz2,tz3)))
 		            {
-		                checktriangle = 1;
+		            	checkTriangle = true;
 		            }
 		        }
 		    }
-		    */
+		    
 		    
 		    if(checkTriangle == true)
 		    {
@@ -100,24 +118,41 @@ public class CollisionChecker
 		        numerator = (A*px1+B*py1+C*pz1+D);
 		        denominator = (A*(px1-px2)+B*(py1-py2)+C*(pz1-pz2));
 		        
+		        //System.out.println("numerator = "+numerator);
+		        //System.out.println("denominator = "+denominator);
+		        
 		        if(denominator != 0)
 		        {
 		            u = (numerator/denominator);
 		            cix = px1+u*(px2-px1);
 		            ciy = py1+u*(py2-py1);
 		            ciz = pz1+u*(pz2-pz1);
+		            //System.out.println("cix = "+cix);
+		            //System.out.println("ciy = "+ciy);
+		            //System.out.println("ciz = "+ciz);
+		            //collidePosition.x = cix;
+                    //collidePosition.y = ciy;
+                    //collidePosition.z = ciz;
 		            
-		            if(C != 0)
+		            if(B != 0)
 		            {
-		                float planez1 = (((-A*px1) + (-B*py1)-D)/C);
-		                float planez2 = (((-A*px2) + (-B*py2)-D)/C);
-		                if (pz1 > planez1)
+		                //float planez1 = (((-A*px1) + (-B*py1)-D)/C);
+		                //collidePosition.z = planez1;
+		                //System.out.println("planez1 = "+planez1);
+		                //float planez2 = (((-A*px2) + (-B*py2)-D)/C);
+		            	float planey1 = (((-A*px1) + (-C*pz1)-D)/B);
+		                float planey2 = (((-A*px2) + (-C*pz2)-D)/B);
+		                //collidePosition.y = planey1;
+		                //p1Collide.y = planey1;
+		                //p2Collide.y = planey2;
+		                //System.out.println("planey2");
+		                if (py1 > planey1)
 		                {
 		                    firstAbove = 1;
 		                }
 		                else
 		                {
-		                    if (pz1 < planez1)
+		                    if (py1 < planey1)
 		                    {
 		                        firstAbove = -1;
 		                    }
@@ -127,13 +162,13 @@ public class CollisionChecker
 		                    }
 		                }
 		                
-		                if (pz2 < planez2)
+		                if (py2 < planey2)
 		                {
 		                    secondAbove = -1;
 		                }
 		                else
 		                {
-		                    if (pz2 > planez2)
+		                    if (py2 > planey2)
 		                    {
 		                        secondAbove = 1;
 		                    }
@@ -168,79 +203,75 @@ public class CollisionChecker
 		        
 		        if ((secondAbove != firstAbove))
 		        {
+		        	//System.out.println("made it to here");
 		            //if the line actually intersects the triangle
-		            if (string(cix) == "nothing")
+		            if (u == -1 && ciz == -1 && ciy == -1 && ciz == -1 && triIndex == -1)
 		            {
-		            
+		            	
 		            }
 		            else
 		            {
-		                if (sc_check_intriangle(cix,ciy,ciz,tx1,ty1,tz1,tx2,ty2,tz2,tx3,ty3,tz3,1))
+		                if (checkInsideTriangle(cix,ciy,ciz,tx1,ty1,tz1,tx2,ty2,tz2,tx3,ty3,tz3,10))
 		                {
+		                	//System.out.println("point is inside the triangle");
 		                    //what is the distance to the triangle? set it to maxdist
-		                    if (string(mindist) == "nothing")
+		                    if (minDist == -1)
 		                    {
-		                        trianglecollide = i;
-		                        tridex = i;
-		                        tricoldex = i;
+		                        triangleCollide = i;
+		                        triIndex = i;
 		                        
 		                        collidePosition.x = cix;
 	                            collidePosition.y = ciy;
 	                            collidePosition.z = ciz;
 
-		                        mindist = sqrt(abs((cix-px1)*(cix-px1)+(ciy-py1)*(ciy-py1)+(ciz-pz1)*(ciz-pz1)));
+		                        minDist = (float)(Math.sqrt(Math.abs((cix-px1)*(cix-px1)+(ciy-py1)*(ciy-py1)+(ciz-pz1)*(ciz-pz1))));
 		                    }
 		                    else
 		                    {
 		                        //if (this distance is closer)
-		                        if (sqrt(abs((cix-px1)*(cix-px1)+(ciy-py1)*(ciy-py1)+(ciz-pz1)*(ciz-pz1))) < mindist)
+		                        if ((float)(Math.sqrt(Math.abs((cix-px1)*(cix-px1)+(ciy-py1)*(ciy-py1)+(ciz-pz1)*(ciz-pz1)))) < minDist)
 		                        {
-		                            trianglecollide = i;
-		                            tridex = i;
-		                            tricoldex = i;
+		                            triangleCollide = i;
+		                            triIndex = i;
 		                            
 		                            collidePosition.x = cix;
 		                            collidePosition.y = ciy;
 		                            collidePosition.z = ciz;
 		                            
-		                            mindist = sqrt(abs((cix-px1)*(cix-px1)+(ciy-py1)*(ciy-py1)+(ciz-pz1)*(ciz-pz1)));
+		                            minDist = (float)(Math.sqrt(Math.abs((cix-px1)*(cix-px1)+(ciy-py1)*(ciy-py1)+(ciz-pz1)*(ciz-pz1))));
 		                        }
 		                    }
+		                }
+		                else
+		                {
+		                	//System.out.println("collision point was not inside the triangle");
 		                }
 		            }
 		        }
 		        else
 		        {
-		            if (firstabove == 0 && secondabove == 0)
+		            if (firstAbove == 0 && secondAbove == 0)
 		            {
 		                //trianglecollide = i;
 		                //tridex = i;
-		                tricoldex = i;
-		                onplane = true;
+		                onPlane = true;
 		            }
 		        }
 		    }
-		    i+=1;
 		}
-		if (trianglecollide > -1)
+		
+		if (triangleCollide > -1)
 		{
-		    return false;
+		    return true;
 		}
 		else
 		{
-		    if (onplane == false)
+		    //if (onPlane == false)
 		    {
-		        tricoldex = "nothing";
+		    	//triangleCollideIndex = -1;
 		    }
-		    return true;
+		    return false;
 		}
-		
-		
-		
-		////////////////////////////////////////////////////////////////////////////////////////////////
-		
-		
-		return true;
 	}
 	
 	
@@ -248,11 +279,11 @@ public class CollisionChecker
 	
 	
 	public boolean checkInsideTriangle(
+			float checkx, float checky, float checkz, 
 			float cx1, float cy1, float cz1,
 			float cx2, float cy2, float cz2,
 			float cx3, float cy3, float cz3,
-			float prec, 
-			float checkx, float checky, float checkz)
+			float prec)
 	{
 
 		//totalarea = sc_get_area(cx1,cy1,cx2,cy2,cx3,cy3);
@@ -281,14 +312,14 @@ public class CollisionChecker
 	}
 	
 	
-	public float getArea(float x1, float y1, float x2, float y2, float x3, float y3)
+	public float getArea(float argument0, float argument1, float argument2, float argument3, float argument4, float argument5)
 	{
-		float argument0 = x1;
-		float argument1 = y1;
-		float argument2 = x2;
-		float argument3 = y2;
-		float argument4 = x3;
-		float argument5 = y3;
+		//float argument0 = x1;
+		//float argument1 = y1;
+		//float argument2 = x2;
+		//float argument3 = y2;
+		//float argument4 = x3;
+		//float argument5 = y3;
 		
 		float a,b,c,s;
 		a = (float)Math.sqrt(Math.abs(((argument0-argument2)*(argument0-argument2))+((argument1-argument3)*(argument1-argument3))));
@@ -307,5 +338,10 @@ public class CollisionChecker
 	public void setCollideModel(CollisionModel newCollideModel)
 	{
 		this.collideModel = newCollideModel;
+	}
+
+	public Vector3f getCollidePosition() 
+	{
+		return collidePosition;
 	}
 }

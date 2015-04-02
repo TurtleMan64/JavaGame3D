@@ -10,7 +10,6 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.util.vector.Vector3f;
 
-import collision.CollisionChecker;
 import renderEngine.DisplayManager;
 import renderEngine.Loader;
 import renderEngine.MasterRenderer;
@@ -19,7 +18,9 @@ import terrains.Terrain;
 import textures.ModelTexture;
 import textures.TerrainTexture;
 import textures.TerrainTexturePack;
-import toolbox.MousePicker;
+import collision.CollisionChecker;
+import collision.CollisionModel;
+import entities.Ball;
 import entities.Camera;
 import entities.Entity;
 import entities.Light;
@@ -31,13 +32,14 @@ public class MainGameLoop
 	
 	public static void main(String[] args) 
 	{
+		long timeStamp = System.currentTimeMillis();
+		int frameCount = 0;
 		gameEntities = new ArrayList<Entity>();
 		
 		DisplayManager.createDisplay();
 		
 		Loader loader = new Loader();
 		
-		//terrain stuff start
 		TerrainTexture backgroundTexture = new TerrainTexture(loader.loadTexture("grass"));
 		TerrainTexture rTexture = new TerrainTexture(loader.loadTexture("mud"));
 		TerrainTexture gTexture = new TerrainTexture(loader.loadTexture("grassy2"));
@@ -48,12 +50,10 @@ public class MainGameLoop
 		TerrainTexture blendMap = new TerrainTexture(loader.loadTexture("blendMap"));
 		
 		
-		//neeeeeeeeeeeeeeeeeeeeeeeeeeeeeeew
-		//laptop neeeew
 		
+		RawModel model = OBJLoader.loadObjModel("BeachStage", loader);
 		
-		
-		RawModel model = OBJLoader.loadObjModel("dragon3dsmax", loader);
+		CollisionModel beachCollideModel = OBJLoader.loadObjModel("BeachStage");
 		
 		RawModel modelOotShield = OBJLoader.loadObjModel("ootShield", loader);
 		
@@ -88,84 +88,79 @@ public class MainGameLoop
 		textureOotShield.setReflectivity(1.0f);
 		
 		
-		Entity entity = new Entity(staticModel, new Vector3f(0,-5,-20),0,0,0,1);
+		Entity entity = new Entity(staticModel, new Vector3f(0,0,0),0,0,0,1);
 		Entity entityFern = new Entity(staticModelFern, new Vector3f(0,0,0),0,0,0,1);
 		Entity entitySun = new Entity(staticModelSun, new Vector3f(0,0,0),0,0,0,1);
 		Entity lampEntity = new Entity(staticModelSun, new Vector3f(183,-15,-140),0,0,0,1);
+		
+		
 		
 		gameEntities.add(entity);
 		gameEntities.add(entityFern);
 		gameEntities.add(entitySun);
 		gameEntities.add(lampEntity);
-		entity.setScale(10.0f);
 		
 		
-		Light light = new Light(new Vector3f(0,1000000,-500000), new Vector3f(0.5f,0.5f,0.5f));
+		
+		
+		//Light light = new Light(new Vector3f(0,1000000,-500000), new Vector3f(1f,1f,1f));
+		
+		Light light = new Light(new Vector3f(0,100000,-500000), new Vector3f(1f,1f,1f));
+		
+		
 		List<Light> lights = new ArrayList<Light>();
 		lights.add(light);
 		lights.add(new Light(new Vector3f(183,-15,-140), new Vector3f(2,2,0), new Vector3f(1, 0.01f, 0.002f)));
 		
-		Terrain terrain = new Terrain(0, -1, loader, texturePack, blendMap, "heightMap", 0.1f, 0.1f);
+		Terrain terrain = new Terrain(0, -1, loader, texturePack, blendMap, "heightMap", 1f, 0f);
 		
-		CollisionChecker collisionChecker = new CollisionChecker();
-		//Entity terrainentity = new Entity(new TexturedModel(terrain.getModel(), new ModelTexture(loader.loadTexture("image"))), new Vector3f(0,0,0), 0,0,0,1);
+		CollisionChecker collisionChecker = new CollisionChecker(beachCollideModel);
 		
 		Camera camera = new Camera();
 		
-		Player player = new Player(staticModelOotShield, new Vector3f(0,0,0), 0,0,0,1, camera, terrain);
+		for(int i = 0; i < 1; i++)
+		{
+			gameEntities.add(new Ball(staticModelSun, new Vector3f((float)Math.random()*100,(float)Math.random()*100,(float)Math.random()*100), 0,0,0,1, collisionChecker));
+		}
+		
+		Player player = new Player(staticModelOotShield, new Vector3f(0,0,0), 0,0,0,1, camera, collisionChecker);
 		
 		gameEntities.add(player);
 		
 		MasterRenderer renderer = new MasterRenderer();
 		
-		MousePicker picker = new MousePicker(camera, renderer.getProjectionMatrix(), terrain);
 		
-		Vector3f terrainPoint = new Vector3f(0,0,0);
 		while(!Display.isCloseRequested() && !(Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)))
 		{
-			//entity.increasePosition(0, 0, 0);
-			camera.move();
-			//camera.setPosition(player.getPosition());
-			player.step();
-			picker.update();
-			terrainPoint = picker.getCurrentTerrainPoint();
-			if(terrainPoint!= null)
-			{
-				lampEntity.setPosition(new Vector3f(terrainPoint.x, terrainPoint.y +15, terrainPoint.z));
-				//lights.get(1).setPosition(new Vector3f(terrainPoint.x, terrainPoint.y +15, terrainPoint.z));
-			}
-			//System.out.println(picker.getCurrentRay());
-			//light.setPosition(new Vector3f(light.getPosition().x, light.getPosition().y+0.02f, light.getPosition().z));
-			entity.increaseRotation(0, 1, 0);
+			lampEntity.setPosition(collisionChecker.getCollidePosition());
+
 			entitySun.setPosition(light.getPosition());
 			
-			player.increaseRotation(1, 1, 1);
-			//entityBall.setPosition(player.getViewPosition());
-			
-			
-			
-			//game logic
+			camera.step();
 			for(Entity currentEntity: gameEntities)
 			{
+				currentEntity.step();
 				renderer.processEntity(currentEntity);
 			}
+			lights.get(1).setPosition(player.getPosition());
 			
 			renderer.processTerrain(terrain);
 			
-			//renderer.processEntity(entity);
-			//renderer.processEntity(entityFern);
-			//renderer.processEntity(entitySun);
-			//renderer.processEntity(lampEntity);
-			//renderer.processEntity(player);
-			
-			renderer.render(lights, camera);
+			renderer.render(lights, camera, collisionChecker.getCollideModel());
 
 			DisplayManager.updateDisplay();
+			
+			frameCount+=1;
+			if(frameCount >= 60)
+			{
+				frameCount = 0;
+				System.out.println(0.06*(System.currentTimeMillis() - timeStamp));
+				timeStamp = System.currentTimeMillis();
+			}
 		}
 		
 		renderer.cleanUp();
 		loader.cleanUp();
 		DisplayManager.closeDisplay();
 	}
-
 }

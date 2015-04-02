@@ -1,17 +1,19 @@
 package renderEngine;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.List;
+
+import models.RawModel;
 
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
-import models.RawModel;
+import collision.CollisionModel;
+import collision.Triangle3D;
 
 public class OBJLoader 
 {
@@ -135,7 +137,155 @@ public class OBJLoader
 			indicesArray[i] = indices.get(i);
 		}
 		
+		
+		
 		return loader.loadToVAO(verticesArray, textureArray, normalsArray, indicesArray);
+	}
+	
+	public static CollisionModel loadObjModel(String fileName)
+	{
+		CollisionModel collisionModel = new CollisionModel();
+		FileReader fr = null;
+		try 
+		{
+			fr = new FileReader(new File("res/"+fileName+".obj"));
+		} 
+		catch (FileNotFoundException e) 
+		{
+			System.err.println("Couldn't load file!");
+			e.printStackTrace();
+		}
+		BufferedReader reader = new BufferedReader(fr);
+		
+		String line;
+		List<Vector3f> vertices = new ArrayList<Vector3f>();
+		List<Vector2f>textures = new ArrayList<Vector2f>();
+		List<Vector3f>normals = new ArrayList<Vector3f>();
+		List<Integer> indices = new ArrayList<Integer>();
+		float[] verticesArray = null;
+		float[] textureArray = null;
+		float[] normalsArray = null;
+		int[] indicesArray = null;
+		
+		try
+		{
+			while(true)
+			{
+				line = reader.readLine();
+				//System.out.print("line = "+line);
+				String[] currentLine = line.split(" ");
+				//System.out.println(Arrays.toString(currentLine));
+				if(line.startsWith("v "))
+				{
+					Vector3f vertex;
+					if(currentLine[1].equals(""))
+					{
+						vertex = new Vector3f(Float.parseFloat(currentLine[2]), 
+								Float.parseFloat(currentLine[3]), 
+								Float.parseFloat(currentLine[4]));
+					}
+					else
+					{
+						vertex = new Vector3f(Float.parseFloat(currentLine[1]), 
+								Float.parseFloat(currentLine[2]), 
+								Float.parseFloat(currentLine[3]));
+					}
+					vertices.add(vertex);
+				}
+				else
+				{
+					if(line.startsWith("vt "))
+					{
+						Vector2f texture = new Vector2f(Float.parseFloat(currentLine[1]), 
+								Float.parseFloat(currentLine[2]));
+						textures.add(texture);
+					}
+					else
+					{
+						if(line.startsWith("vn "))
+						{
+							Vector3f normal = new Vector3f(Float.parseFloat(currentLine[1]), 
+									Float.parseFloat(currentLine[2]), 
+									Float.parseFloat(currentLine[3]));
+							normals.add(normal);
+						}
+						else
+						{
+							if(line.startsWith("f "))
+							{
+								textureArray = new float[vertices.size()*2];
+								normalsArray = new float[vertices.size()*3];
+								break;
+							}
+						}
+					}
+				}
+			}
+		
+			while(line!=null)
+			{
+				if(!line.startsWith("f "))
+				{
+					line = reader.readLine();
+					continue;
+				}
+				String[] currentLine = line.split(" ");
+				String[] vertex1 = currentLine[1].split("/");
+				String[] vertex2 = currentLine[2].split("/");
+				String[] vertex3 = currentLine[3].split("/");
+				
+				processVertex(vertex1,indices, textures, normals, textureArray, normalsArray);
+				processVertex(vertex2,indices, textures, normals, textureArray, normalsArray);
+				processVertex(vertex3,indices, textures, normals, textureArray, normalsArray);
+				line = reader.readLine();
+				
+				float vx1 = vertices.get(Integer.parseInt(vertex1[0])-1).x;
+				float vy1 = vertices.get(Integer.parseInt(vertex1[0])-1).y;
+				float vz1 = vertices.get(Integer.parseInt(vertex1[0])-1).z;
+				
+				float vx2 = vertices.get(Integer.parseInt(vertex2[0])-1).x;
+				float vy2 = vertices.get(Integer.parseInt(vertex2[0])-1).y;
+				float vz2 = vertices.get(Integer.parseInt(vertex2[0])-1).z;
+			
+				float vx3 = vertices.get(Integer.parseInt(vertex3[0])-1).x;
+				float vy3 = vertices.get(Integer.parseInt(vertex3[0])-1).y;
+				float vz3 = vertices.get(Integer.parseInt(vertex3[0])-1).z;
+				
+				
+				
+				collisionModel.triangles.add(new Triangle3D(
+						new Vector3f(vx1,vy1,vz1), 
+						new Vector3f(vx2,vy2,vz2), 
+						new Vector3f(vx3,vy3,vz3)));
+						
+			}
+			reader.close();
+			
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		verticesArray = new float[vertices.size()*3];
+		indicesArray = new int[indices.size()];
+		
+		int vertexPointer = 0;
+		for(Vector3f vertex:vertices)
+		{
+			verticesArray[vertexPointer++] = vertex.x;
+			verticesArray[vertexPointer++] = vertex.y;
+			verticesArray[vertexPointer++] = vertex.z;
+		}
+		
+		for(int i = 0; i < indices.size(); i++)
+		{
+			indicesArray[i] = indices.get(i);
+		}
+		
+		
+		
+		return collisionModel;
 	}
 	
 	private static void processVertex(String[] vertexData, List<Integer> indices, List<Vector2f> textures, 
